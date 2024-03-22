@@ -45,12 +45,12 @@ func main() {
 		// Service Config
 		if service.Type == "proxy" {
 			// Web endpoint
-			urlS, err := url.Parse(service.EgressUrl)
+			urls, err := url.Parse(service.EgressUrl)
 			if err != nil {
 				tenant.Logger.Fatal(err)
 			}
 			targets = append(targets, &middleware.ProxyTarget{
-				URL: urlS,
+				URL: urls,
 			})
 			tenant.Use(middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
 			tenant.GET("/*", func(c echo.Context) error {
@@ -87,10 +87,18 @@ func main() {
 	server.GET("/status", func(c echo.Context) error {
 		return c.String(http.StatusOK, "{\"success\":\"ok\"}")
 	})
-	hosts[cfg.StatusHost+":"+cfg.ProxyListenPort] = &models.Host{Echo: server}
+	// Start server with Graceful Shutdown WITH CERT
+	go func() {
+		if err := server.Start(":" + cfg.ProxyStatusListenPort); err != nil && err != http.ErrServerClosed {
+			server.Logger.Fatal("shutting down the server")
+		}
+	}()
 
 	// Server
 	e := echo.New()
+	if cfg.SSLEnabled {
+		e.Pre(middleware.HTTPSRedirect())
+	}
 	e.Use(middleware.Logger())
 	e.Logger.SetOutput(&lumberjack.Logger{
 		Filename:   cfg.Logfile,
@@ -121,20 +129,24 @@ func main() {
 	e.Use(middleware.BodyLimit("4T"))
 
 	// Start server with Graceful Shutdown WITH CERT
+	go func() {
+		if cfg.SSLEnabled {
+			if err := e.StartTLS(":"+cfg.HttpsListenPort, cfg.SSLCrtPem, cfg.SSLKeyPem); err != nil && err != http.ErrServerClosed {
+				e.Logger.Fatal("shutting down the server")
+			}
+		} else {
+			if err := e.Start(":" + cfg.HttpListenPort); err != nil && err != http.ErrServerClosed {
+				e.Logger.Fatal("shutting down the server")
+			}
+		}
+	}()
+
+	// Start server with Graceful Shutdown WITHOUT CERT
 	//go func() {
-	//	if err := e.StartTLS(":"+cfg.SSLPort,
-	//		"/etc/repipe/ssl/server.crt",
-	//		"/etc/repipe/ssl/server.key"); err != nil && err != http.ErrServerClosed {
+	//	if err := e.Start(":" + cfg.ProxyListenPort); err != nil && err != http.ErrServerClosed {
 	//		e.Logger.Fatal("shutting down the server")
 	//	}
 	//}()
-
-	// Start server with Graceful Shutdown WITHOUT CERT
-	go func() {
-		if err := e.Start(":9000"); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server")
-		}
-	}()
 
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
 	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
