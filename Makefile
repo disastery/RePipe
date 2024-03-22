@@ -39,7 +39,7 @@ install_linux:
 	@mkdir -p /var/www/html
 	@cp -n app.yaml.example /etc/repipe
 	@cp -n certgen.sh /etc/repipe/ssl
-	@printf "[Unit]\nDescription=Repipe the Reverse Proxy\n\n[Service]\nType=simple\nRestart=always\n\RestartSec=5s\nExecStart=/usr/sbin/repipe\n\n[Install]\nWantedBy=multi-user.target\n" > /lib/systemd/system/repipe.service
+	@printf "[Unit]\nDescription=Repipe the Reverse Proxy\n\n[Service]\nType=simple\nRestart=always\nRestartSec=5s\nExecStart=/usr/sbin/repipe\n\n[Install]\nWantedBy=multi-user.target\n" > /lib/systemd/system/repipe.service
 	@echo "Start Repipe service using"
 	@echo "-----------------------------------"
 	@echo " $> sudo service repipe start"
