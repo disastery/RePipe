@@ -1,33 +1,37 @@
 ---
 version: v1
-log_file: "/var/log/repipe/app.log"
-status_host: "192.168.1.2"
-proxy_listen_port: "9000"
+log_file: "logs/app.log"
+status_host: "localhost"
+proxy_status_listen_port: "9000"
+http_listen_port: "80"
+https_listen_port: "443"
+# SSL can be ignored from specification,
+# if specified enable true and provide PEM version of crt and key
+# ssl_enabled: false
+# ssl_crt_pem: ""
+# ssl_key_pem: ""
+# Enable/Disable SSL
+ssl_enabled: false
+ssl_crt_pem: "server.crt"
+ssl_key_pem: "server.key"
 services:
   - name: "Assets 1"
     type: static
     ingress_url: "app1.localhost"
-    egress_url: "/var/www/html/"
+    egress_url: "/var/www/html/test1/"
     # optional headers for preventing click jacking, default is "SAMEORIGIN"
     # "SAMEORIGIN" - The page can only be displayed in a frame on the same origin as the page itself.
     # "DENY" - The page cannot be displayed in a frame, regardless of the site attempting to do so.
     # "ALLOW-FROM uri" - The page can only be displayed in a frame on the specified origin.
     x_frame_options: "SAMEORIGIN"
-    # SSL can be ignored from specification, if specified enable true and provide PEM version of crt and key
-    # ssl_enabled: false
-    # ssl_crt_pem: ""
-    # ssl_key_pem: ""
     blacklist_ip_file: "cidr_block_list.txt"
   - name: "Assets 2"
     type: static
     ingress_url: "app2.localhost"
-    egress_url: "/var/www/html/"
-    # Enable SSL
-    ssl_enabled: true
-    ssl_crt_pem: "server.crt"
-    ssl_key_pem: "server.key"
+    egress_url: "/var/www/html/test2/"
     # x_frame_options: "DENY"
   - name: "Web Proxy Service"
     type: proxy
     ingress_url: "api.localhost"
     egress_url: "http://localhost:8000/"
+    # x_frame_options: "DENY"
