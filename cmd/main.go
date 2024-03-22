@@ -17,10 +17,10 @@ import (
 	"time"
 )
 
-const AppYamlFilename = "/etc/repipe/app.yaml"
+//const AppYamlFilename = "/etc/repipe/app.yaml"
 
 // NOTE: For local testing use the following
-//const AppYamlFilename = "app.yaml"
+const AppYamlFilename = "app.yaml"
 
 func load() config.Config {
 	var cfg config.Config
@@ -92,6 +92,7 @@ func main() {
 	// Start server with Graceful Shutdown WITH CERT
 	go func() {
 		if err := server.Start(":" + cfg.ProxyStatusListenPort); err != nil && err != http.ErrServerClosed {
+			server.Logger.Fatal(err.Error())
 			server.Logger.Fatal("shutting down the server")
 		}
 	}()
