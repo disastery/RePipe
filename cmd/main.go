@@ -134,10 +134,12 @@ func main() {
 	go func() {
 		if cfg.SSLEnabled {
 			if err := e.StartTLS(":"+cfg.HttpsListenPort, cfg.SSLCrtPem, cfg.SSLKeyPem); err != nil && err != http.ErrServerClosed {
+				e.Logger.Fatal(err.Error())
 				e.Logger.Fatal("shutting down the server")
 			}
 		} else {
 			if err := e.Start(":" + cfg.HttpListenPort); err != nil && err != http.ErrServerClosed {
+				e.Logger.Fatal(err.Error())
 				e.Logger.Fatal("shutting down the server")
 			}
 		}
