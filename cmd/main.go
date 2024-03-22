@@ -17,10 +17,10 @@ import (
 	"time"
 )
 
-//const AppYamlFilename = "/etc/repipe/app.yaml"
+const AppYamlFilename = "/etc/repipe/app.yaml"
 
 // NOTE: For local testing use the following
-const AppYamlFilename = "app.yaml"
+//const AppYamlFilename = "app.yaml"
 
 func load() config.Config {
 	var cfg config.Config
