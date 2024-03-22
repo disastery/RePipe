@@ -1,6 +1,6 @@
 ---
 version: v1
-log_file: "logs/app.log"
+log_file: "/var/log/repipe/app.log"
 status_host: "localhost"
 proxy_status_listen_port: "9000"
 http_listen_port: "80"
